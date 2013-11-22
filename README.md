@@ -66,6 +66,12 @@ file to get you started. Then simply replace the appropriate fields and the
 **repositories** sections for all the pull sources with the repository
 information for the repositories you want to watch for open pull requests.
 
+## Adding pull sources and repos
+
+`pra` has command line helpers to add pull sources and repositories without
+manually editing the configuration file. Use `pra source add` to add a new
+pull source, and `pra repo add` to add a new repository.
+
 ### GitHub Authentication
 
 #### Multi-Factor Authentication

@@ -1,4 +1,5 @@
 require_relative "../../../lib/pra/config"
+require 'fakefs/spec_helpers'
 
 describe Pra::Config do
   describe "#initialize" do
@@ -29,6 +30,84 @@ describe Pra::Config do
       config = double('config')
       subject.stub(:new).and_return(config)
       subject.load_config.should eq(config)
+    end
+  end
+
+  describe '.load_config_or_default' do
+    subject { Pra::Config }
+
+    context 'when the config file exists' do
+      before { allow(subject).to receive(:config_exists?).and_return(true) }
+
+      it 'loads the config' do
+        expect(subject).to receive(:load_config)
+        subject.load_config_or_default
+      end
+    end
+
+    context 'when the config file does not exist' do
+      before { allow(subject).to receive(:config_exists?).and_return(false) }
+
+      it 'builds a default config' do
+        expect(subject).to receive(:new).with({'pull_sources' => []})
+        subject.load_config_or_default
+      end
+    end
+  end
+
+  describe ".config_exists?" do
+    include FakeFS::SpecHelpers
+    subject { Pra::Config }
+
+    context "when the config file exists" do
+      before do
+        FileUtils.mkdir_p(File.dirname(subject.config_path))
+        File.write(subject.config_path, '{}')
+      end
+
+      it 'returns true' do
+        expect(subject.config_exists?).to be_true
+      end
+    end
+
+    context 'when the config file does not exist' do
+      it 'returns false' do
+        expect(subject.config_exists?).to be_false
+      end
+    end
+  end
+
+  describe ".write_config_file" do
+    include FakeFS::SpecHelpers
+    subject { Pra::Config }
+
+    before do
+      FileUtils.mkdir_p(File.dirname(subject.config_path))
+    end
+
+    context "when a config file exists" do
+      before do
+        File.write(subject.config_path, 'old config')
+      end
+
+      it "backs up the config" do
+        subject.write_config_file({})
+        expect(File.read(subject.config_path + '.bak')).to eq('old config')
+      end
+    end
+
+    context "when a config file does not exist" do
+      it "does not create a backup file" do
+        subject.write_config_file({})
+        expect(File.exists?(subject.config_path + '.bak')).to be_false
+      end
+    end
+
+    it "writes the new config to the config file" do
+      new_config = {'pull_sources' => [{'type' => 'github', 'repositories' => []}]}
+      subject.write_config_file(new_config)
+      config = File.read(subject.config_path)
+      expect(JSON.parse(config)).to eq(new_config)
     end
   end
 
@@ -140,6 +219,16 @@ describe Pra::Config do
       assignee_blacklist_configs = double('assignee blacklist configs')
       subject.instance_variable_set(:@initial_config, { "assignee_blacklist" => assignee_blacklist_configs })
       subject.assignee_blacklist.should eq(assignee_blacklist_configs)
+    end
+  end
+
+  describe "#add_pull_source" do
+    subject { Pra::Config.new({'pull_sources' => []}) }
+
+    it 'adds the source to the pull sources array' do
+      source = double
+      subject.add_pull_source(source)
+      expect(subject.pull_sources).to include(source)
     end
   end
 end

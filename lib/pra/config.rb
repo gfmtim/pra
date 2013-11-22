@@ -21,6 +21,28 @@ module Pra
       return contents
     end
 
+    def self.load_config_or_default
+      if config_exists?
+        load_config
+      else
+        self.new({ 'pull_sources' => [] })
+      end
+    end
+
+    def self.write_config_file(config)
+      if config_exists?
+        FileUtils.cp(config_path, config_path + '.bak')
+      end
+
+      File.open(config_path, 'w') do |file|
+        file.write(JSON::pretty_generate(config))
+      end
+    end
+
+    def self.config_exists?
+      File.exists?(config_path)
+    end
+
     def self.config_path
       return File.join(self.users_home_directory, '.pra.json')
     end
@@ -43,6 +65,14 @@ module Pra
 
     def assignee_blacklist
       @initial_config["assignee_blacklist"]
+    end
+
+    def write_config
+      Pra::Config.write_config_file(@initial_config)
+    end
+
+    def add_pull_source(pull_source)
+      pull_sources.push(pull_source)
     end
   end
 end
