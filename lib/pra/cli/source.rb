@@ -1,11 +1,10 @@
-require 'thor'
+# require 'thor'
 require 'highline/import'
 require 'pra/config'
 
 module Pra
   module Cli
-    class Source < Thor
-      desc "add [TYPE]", "add config entry for a pull source"
+    class Source
       def add(source_type = nil)
         source = build_pull_source(source_type)
         pra_config = Pra::Config.load_config_or_default

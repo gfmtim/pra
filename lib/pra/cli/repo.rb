@@ -1,11 +1,10 @@
 require 'pra/config'
-require 'thor'
+# require 'thor'
 require 'highline/import'
 
 module Pra
   module Cli
-    class Repo < Thor
-      desc "add", "add a repo"
+    class Repo
       def add
         pra_config = Pra::Config.load_config_or_default
 

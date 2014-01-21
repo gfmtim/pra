@@ -25,6 +25,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "rest-client", "~> 1.6.7"
   spec.add_dependency "launchy", "~> 2.3.0"
-  spec.add_dependency "thor"
+  # spec.add_dependency "thor"
+  spec.add_dependency "gli"
   spec.add_dependency "highline"
 end

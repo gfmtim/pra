@@ -1,23 +1,52 @@
 require 'pra/app'
 require 'pra/cli/source'
 require 'pra/cli/repo'
-require 'thor'
+require 'pra/version'
+require 'gli'
 require 'highline/import'
 
 module Pra
   module Cli
-    class Main < Thor
-      register Pra::Cli::Repo, :repo, "repo SUBCOMMAND", "Manage repositories. See `pra repo help` for details."
-      register Pra::Cli::Source, :source, "source SUBCOMMAND", "Manage pull sources. See `pra source help` for details."
+    class Main
+      extend GLI::App
+      version Pra::VERSION
+      subcommand_option_handling :normal
+      program_desc "CLI tool that shows open pull-requests across systems."
 
-      default_task :launch
-      desc "launch", "Start pra"
-      def launch
-        Pra::App.new.run
+      desc "Manage pull sources"
+      command :source do |c|
+        c.desc "add a new pull source of specified type (stash, github)"
+        c.long_desc <<-DESC
+        Add a new pull request source. Source type can be 'stash' or 'github'.
+        If source type is not provided as an argument you will be prompted to
+        select one.
+        DESC
+        c.arg_name "[source type]"
+        c.command :add do |add|
+          add.action do |global_options, options, args|
+            Pra::Cli::Source.new.add(args.first)
+          end
+        end
       end
 
-      subcommand "source", Pra::Cli::Source
-      subcommand "repo", Pra::Cli::Repo
+      desc "Manage repositories"
+      command :repo do |c|
+        c.desc "add a new repository to one of your pull sources"
+        c.command :add do |add|
+          add.action do |global_options, options, args|
+            Pra::Cli::Repo.new.add
+          end
+        end
+      end
+
+      desc "Start pra"
+      command :start do |c|
+        c.action do |global_options, options, args|
+          Pra::App.new.run
+        end
+      end
+
+      default_command :start
     end
   end
 end
