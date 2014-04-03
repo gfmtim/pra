@@ -27,6 +27,7 @@ module Pra
       end
 
       desc "add a new repository to one of your pull sources"
+      long_desc "Add a new repository to a pull source. This command takes no arguments and will launch an interactive menu to select a source and define the repo."
       command :'add-repo' do |add|
         add.action do |global_options, options, args|
           Pra::Cli::Repo.new.add
